@@ -1,0 +1,209 @@
+﻿@page "/"
+@using System.ComponentModel.DataAnnotations
+@using System.Text.Json
+@using Microsoft.Maui.Storage
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<div class="login-screen">
+    <div class="login-box">
+        <img src="https://aws.traveler.es/prod/designs/v1/assets/1000x665/28470.jpg" alt="Antigua Guatemala" class="login-logo" />
+        <h2>Bienvenido a Explora Guatemala</h2>
+        <p>Inicia sesión para continuar</p>
+
+        <EditForm Model="@loginModel" OnValidSubmit="@HandleLogin">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <InputText id="email" class="form-control" placeholder="Ingresa tu correo electrónico" @bind-Value="loginModel.Email" />
+                <ValidationMessage For="@(() => loginModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <InputText id="password" type="password" class="form-control" placeholder="Ingresa tu contraseña" @bind-Value="loginModel.Password" />
+                <ValidationMessage For="@(() => loginModel.Password)" />
+            </div>
+
+            <button type="submit" class="btn-login">Iniciar Sesión</button>
+        </EditForm>
+
+        <!-- Aquí agregamos el botón de Google -->
+        <button class="signin">
+            <svg viewBox="0 0 256 262"
+                 preserveAspectRatio="xMidYMid"
+                 xmlns="http://www.w3.org/2000/svg">
+                <path d="M255.878 133.451c0-10.734-.871-18.567-2.756-26.69H130.55v48.448h71.947c-1.45 12.04-9.283 30.172-26.69 42.356l-.244 1.622 38.755 30.023 2.685.268c24.659-22.774 38.875-56.282 38.875-96.027"
+                      fill="#4285F4"></path>
+                <path d="M130.55 261.1c35.248 0 64.839-11.605 86.453-31.622l-41.196-31.913c-11.024 7.688-25.82 13.055-45.257 13.055-34.523 0-63.824-22.773-74.269-54.25l-1.531.13-40.298 31.187-.527 1.465C35.393 231.798 79.49 261.1 130.55 261.1"
+                      fill="#34A853"></path>
+                <path d="M56.281 156.37c-2.756-8.123-4.351-16.827-4.351-25.82 0-8.994 1.595-17.697 4.206-25.82l-.073-1.73L15.26 71.312l-1.335.635C5.077 89.644 0 109.517 0 130.55s5.077 40.905 13.925 58.602l42.356-32.782"
+                      fill="#FBBC05"></path>
+                <path d="M130.55 50.479c24.514 0 41.05 10.589 50.479 19.438l36.844-35.974C195.245 12.91 165.798 0 130.55 0 79.49 0 35.393 29.301 13.925 71.947l42.211 32.783c10.59-31.477 39.891-54.251 74.414-54.251"
+                      fill="#EB4335"></path>
+            </svg>
+            Sign in with Google
+        </button>
+
+        <p class="register-text">¿No tienes cuenta? <a href="/registro">Regístrate aquí</a></p>
+    </div>
+</div>
+
+<!-- Modal de éxito -->
+@if (showSuccessModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h2>Inicio de sesión exitoso</h2>
+            <p>Has iniciado sesión correctamente.</p>
+            <button class="btn-login" @onclick="CloseModal">Aceptar</button>
+        </div>
+    </div>
+}
+
+@code {
+    @inject ApiService ApiService
+    @inject NavigationManager NavigationManager
+    @using System.ComponentModel.DataAnnotations
+    @using System.Text.Json
+    @using Microsoft.Maui.Storage
+
+    private LoginModel loginModel = new LoginModel();
+    private bool showSuccessModal = false;
+
+    private async Task HandleLogin()
+    {
+        try
+        {
+            Console.WriteLine($"Correo: {loginModel.Email}, Contraseña: {loginModel.Password}");
+
+            var result = await ApiService.LoginUser(loginModel.Email, loginModel.Password);
+
+            // Deserializar la respuesta con opciones insensibles a mayúsculas
+            var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                };
+            var response = JsonSerializer.Deserialize<GraphQLLoginResponse>(result, options);
+
+            if (!string.IsNullOrEmpty(response?.Data?.Login?.Token))
+            {
+                // Guardar el token en SecureStorage
+                var token = response.Data.Login.Token;
+                await SecureStorage.SetAsync("auth_token", token);
+
+                // Mostrar el modal de éxito
+                showSuccessModal = true;
+            }
+            else
+            {
+                // Mostrar mensaje de error
+                await Application.Current.MainPage.DisplayAlert("Error", response?.Data?.Login?.Message ?? "Error al iniciar sesión", "Aceptar");
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            await Application.Current.MainPage.DisplayAlert("Error", "Error al iniciar sesión. Por favor, verifica tus credenciales.", "Aceptar");
+        }
+    }
+
+    private void CloseModal()
+    {
+        showSuccessModal = false;
+
+        // Limpiar los campos del formulario
+        loginModel = new LoginModel();
+
+        // Navegar a la página de menú
+        NavigationManager.NavigateTo("/menu");
+    }
+
+    public class LoginModel
+    {
+        [Required(ErrorMessage = "El correo electrónico es obligatorio")]
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        public string Password { get; set; }
+    }
+
+    // Clases para deserializar la respuesta de GraphQL
+    public class GraphQLLoginResponse
+    {
+        public GraphQLLoginData Data { get; set; }
+    }
+
+    public class GraphQLLoginData
+    {
+        public LoginResponse Login { get; set; }
+    }
+
+    public class LoginResponse
+    {
+        public string Message { get; set; }
+        public string Token { get; set; }
+    }
+}
+
+<style>
+    /* Estilos para el modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+        .modal-content h2 {
+            margin-top: 0;
+            color: #00796B;
+        }
+
+        .modal-content p {
+            font-size: 16px;
+            color: #333;
+        }
+
+    /* Puedes ajustar los estilos del botón si es necesario */
+    .btn-login {
+        background-color: #00796B;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        margin-top: 15px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+
+        .btn-login:hover {
+            background-color: #005f56;
+        }
+</style>
+
+
+
+
+
+
+
+
+

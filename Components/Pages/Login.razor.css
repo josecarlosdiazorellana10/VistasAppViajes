@@ -1,0 +1,155 @@
+﻿/* Estilos globales específicos del login */
+body, html {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Estilo para el contenedor del login */
+.login-screen {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #E0F7FA;
+    background-image: url('https://i.pinimg.com/originals/d7/b7/d8/d7b7d8fef8c672f9877007a80bed6518.jpg'); /* Asegúrate de que la imagen esté en wwwroot/images */
+    background-size: cover;
+    background-position: center;
+}
+
+/* Caja de login */
+.login-box {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* Logo */
+.login-logo {
+    width: 100%;
+    height: auto;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Título */
+.login-box h2 {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #00796B;
+    font-family: 'Arial', sans-serif;
+}
+
+/* Párrafo */
+.login-box p {
+    font-size: 14px;
+    color: #555;
+}
+
+/* Estilos para el formulario */
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+    width: 100%; /* Asegura que los campos del formulario ocupen el 100% del contenedor */
+}
+
+    .form-group label {
+        font-size: 14px;
+        color: #00796B;
+    }
+
+.form-control {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    margin-top: 5px;
+    border-radius: 10px;
+    border: 2px solid #B2EBF2;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: border-color 0.3s ease;
+}
+
+    .form-control:focus {
+        border-color: #00ACC1;
+        outline: none;
+    }
+
+/* Botón de login */
+.btn-login {
+    background-color: #00796B;
+    color: white;
+    padding: 12px;
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    margin-top: 10px;
+}
+
+    .btn-login:hover {
+        background-color: #004D40;
+    }
+
+/* Botón de Google Sign-In */
+.signin {
+    max-width: 100%;
+    display: flex;
+    justify-content: center; /* Centra el botón horizontalmente */
+    align-items: center;
+    padding: 0.5rem 1.4rem;
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+    font-weight: 700;
+    text-align: center;
+    font-family: "Montserrat", sans-serif;
+    vertical-align: middle;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    gap: 0.75rem;
+    color: #c4d2dc;
+    background-color: #19242b;
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0, 0.87, 0.12, 1);
+    margin-top: 15px; /* Espacio entre el botón y el resto del contenido */
+    margin-bottom: 10px;
+}
+
+    .signin:hover {
+        transform: scale(1.025);
+    }
+
+    .signin:active {
+        transform: scale(0.975);
+    }
+
+button svg {
+    height: 24px;
+    width: auto;
+}
+
+/* Texto de registro */
+.register-text {
+    margin-top: 20px;
+    font-size: 14px;
+    color: #004D40;
+}
+
+    .register-text a {
+        color: #00796B;
+        text-decoration: none;
+    }
+
+        .register-text a:hover {
+            text-decoration: underline;
+        }

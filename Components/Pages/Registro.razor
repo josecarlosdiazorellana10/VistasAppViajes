@@ -1,0 +1,245 @@
+﻿@page "/registro"
+@using System.ComponentModel.DataAnnotations
+@inject ApiService ApiService
+@inject NavigationManager NavigationManager
+
+<!-- Importamos la clase para el componente Modal -->
+@using Microsoft.AspNetCore.Components
+
+<div class="registro-screen">
+    <div class="registro-container">
+        <h2>Crea tu cuenta</h2>
+
+        <EditForm Model="@registerModel" OnValidSubmit="HandleRegister">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
+
+            <div class="form-group">
+                <label for="nombres">Nombres</label>
+                <InputText id="nombres" class="form-control" @bind-Value="registerModel.Nombres" placeholder="Ingresa tus nombres" />
+                <ValidationMessage For="@(() => registerModel.Nombres)" />
+            </div>
+
+            <div class="form-group">
+                <label for="apellidos">Apellidos</label>
+                <InputText id="apellidos" class="form-control" @bind-Value="registerModel.Apellidos" placeholder="Ingresa tus apellidos" />
+                <ValidationMessage For="@(() => registerModel.Apellidos)" />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Correo Electrónico</label>
+                <InputText id="email" class="form-control" @bind-Value="registerModel.Email" placeholder="Ingresa tu correo electrónico" />
+                <ValidationMessage For="@(() => registerModel.Email)" />
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña</label>
+                <InputText id="password" class="form-control" type="password" @bind-Value="registerModel.Password" placeholder="Crea una contraseña" />
+                <ValidationMessage For="@(() => registerModel.Password)" />
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Teléfono</label>
+                <InputText id="phone" class="form-control" @bind-Value="registerModel.Phone" placeholder="Ingresa tu número telefónico" />
+                <ValidationMessage For="@(() => registerModel.Phone)" />
+            </div>
+
+            <div class="form-group">
+                <label for="direccion">Dirección</label>
+                <InputText id="direccion" class="form-control" @bind-Value="registerModel.Direccion" placeholder="Ingresa tu dirección" />
+                <ValidationMessage For="@(() => registerModel.Direccion)" />
+            </div>
+
+            <div class="form-group">
+                <label for="fecha_nacimiento">Fecha de Nacimiento</label>
+                <InputDate id="fecha_nacimiento" class="form-control" @bind-Value="registerModel.FechaNacimiento" />
+                <ValidationMessage For="@(() => registerModel.FechaNacimiento)" />
+            </div>
+
+            <!-- Foto de Perfil -->
+            <div class="form-group">
+                <label for="foto_perfil">Foto de Perfil</label>
+                <!-- Cuadro de previsualización de imagen -->
+                <div class="image-preview" id="imagePreview">
+                    <img src="" alt="Imagen de perfil" class="image-preview__image" />
+                    <span class="image-preview__default-text">No hay imagen seleccionada</span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <!-- Botón para seleccionar archivo -->
+                <input type="file" id="foto_perfil" accept="image/*" onchange="previewImage()" />
+            </div>
+
+            <!-- Botón "Tomar Foto" -->
+            <div class="form-group">
+                <button type="button" class="button" onclick="takePhoto()">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" class="svg-icon">
+                        <g stroke-width="2" stroke-linecap="round" stroke="#fff" fill-rule="evenodd" clip-rule="evenodd">
+                            <path d="M4 9c0-1.10457.89543-2 2-2h2l.44721-.89443c.33879-.67757 1.03131-1.10557 1.78889-1.10557h3.5278c.7576 0 1.4501.428 1.7889 1.10557l.4472.89443h2c1.1046 0 2 .89543 2 2v8c0 1.1046-.8954 2-2 2h-12c-1.10457 0-2-.8954-2-2z"></path>
+                            <path d="M15 13c0 1.6569-1.3431 3-3 3s-3-1.3431-3-3 1.3431-3 3-3 3 1.3431 3 3z"></path>
+                        </g>
+                    </svg>
+                    <span class="label">Tomar Foto</span>
+                </button>
+            </div>
+
+            <button type="submit" class="btn-register">Registrarme</button>
+        </EditForm>
+
+        <p>¿Ya tienes cuenta? <a href="/login">Inicia sesión aquí</a></p>
+    </div>
+</div>
+
+<!-- Modal de éxito -->
+@if (showSuccessModal)
+{
+    <div class="modal-overlay">
+        <div class="modal-content">
+            <h2>Registro exitoso</h2>
+            <p>Tu cuenta ha sido creada correctamente.</p>
+            <button class="btn-register" @onclick="CloseModal">Aceptar</button>
+        </div>
+    </div>
+}
+
+@code {
+    private RegisterModel registerModel = new RegisterModel();
+    private bool showSuccessModal = false;
+
+    private async Task HandleRegister()
+    {
+        try
+        {
+            var result = await ApiService.RegisterUser(
+                registerModel.Nombres,
+                registerModel.Apellidos,
+                registerModel.Email,
+                registerModel.Password,
+                registerModel.Phone,
+                "user", // Rol de usuario por defecto
+                registerModel.Direccion,
+                registerModel.FechaNacimiento.ToString("yyyy-MM-dd")
+            );
+
+            Console.WriteLine(result); // Puedes mostrar el resultado o realizar otras acciones
+
+            // Mostrar el modal de éxito
+            showSuccessModal = true;
+            
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error: {ex.Message}");
+            // Mostrar un mensaje de error en pantalla
+            await Application.Current.MainPage.DisplayAlert("Error", ex.Message, "Aceptar");
+        }
+    }
+
+    private void CloseModal()
+    {
+        showSuccessModal = false;
+        // Opcional: Redirigir al usuario a otra página
+        // NavigationManager.NavigateTo("/login");
+        registerModel = new RegisterModel();
+    }
+
+    public class RegisterModel
+    {
+        [Required(ErrorMessage = "Los nombres son obligatorios")]
+        public string Nombres { get; set; }
+
+        [Required(ErrorMessage = "Los apellidos son obligatorios")]
+        public string Apellidos { get; set; }
+
+        [Required(ErrorMessage = "El correo electrónico es obligatorio")]
+        [EmailAddress(ErrorMessage = "El correo electrónico no es válido")]
+        public string Email { get; set; }
+
+        [Required(ErrorMessage = "La contraseña es obligatoria")]
+        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        public string Password { get; set; }
+
+        [Required(ErrorMessage = "El teléfono es obligatorio")]
+        [Phone(ErrorMessage = "El número de teléfono no es válido")]
+        public string Phone { get; set; }
+
+        [Required(ErrorMessage = "La dirección es obligatoria")]
+        public string Direccion { get; set; }
+
+        [Required(ErrorMessage = "La fecha de nacimiento es obligatoria")]
+        public DateTime FechaNacimiento { get; set; } = DateTime.Today;
+    }
+}
+
+<!-- Incluye este script al final del archivo -->
+<script>
+    function previewImage() {
+        const file = document.getElementById('foto_perfil').files[0];
+        const previewContainer = document.getElementById('imagePreview');
+        const previewImage = previewContainer.querySelector('.image-preview__image');
+        const previewDefaultText = previewContainer.querySelector('.image-preview__default-text');
+
+        if (file) {
+            const reader = new FileReader();
+
+            previewDefaultText.style.display = 'none';
+            previewImage.style.display = 'block';
+
+            reader.addEventListener('load', function () {
+                previewImage.setAttribute('src', this.result);
+            });
+
+            reader.readAsDataURL(file);
+        } else {
+            previewDefaultText.style.display = null;
+            previewImage.style.display = null;
+            previewImage.setAttribute('src', '');
+        }
+    }
+
+    function takePhoto() {
+        alert('Tomar foto no está implementado todavía.');
+    }
+</script>
+
+<style>
+    /* Estilos para la fuente */
+    body {
+        font-family: "Open Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+
+    /* Estilos para el modal */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.6);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 999;
+    }
+
+    .modal-content {
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 10px;
+        width: 80%;
+        max-width: 400px;
+        text-align: center;
+    }
+
+    .modal-content h2 {
+        margin-top: 0;
+        color: #00796B;
+    }
+
+    .modal-content p {
+        font-size: 16px;
+        color: #333;
+    }
+</style>
+
